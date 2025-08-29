@@ -27,7 +27,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const actionCodeSettings = {
-  url: typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:9002',
+  // Use a static URL for development to ensure it's authorized in Firebase.
+  url: 'http://localhost:9002',
   handleCodeInApp: true,
 };
 
