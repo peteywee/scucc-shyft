@@ -4,12 +4,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  "projectId": "shyftpro",
+  "appId": "1:920692335727:web:c4129bac05c4b7425d999a",
+  "storageBucket": "shyftpro.appspot.com",
+  "apiKey": "AIzaSyChGKTuUDpXDut7t9QMxO3dg3p3d3js3xM",
+  "authDomain": "shyftpro.firebaseapp.com",
+  "messagingSenderId": "920692335727"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
