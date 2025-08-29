@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CreateShiftForm } from './components/create-shift-form';
 import { UpcomingShiftCard } from './components/upcoming-shift-card';
 import { Calendar } from '@/components/ui/calendar';
+import { ShiftsTable } from './components/shifts-table';
 
 export default function DashboardPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -37,6 +38,9 @@ export default function DashboardPage() {
               />
            </div>
         </div>
+      </div>
+       <div className="mt-4">
+        <ShiftsTable />
       </div>
     </>
   );
