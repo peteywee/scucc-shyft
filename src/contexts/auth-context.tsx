@@ -24,7 +24,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const actionCodeSettings = {
-  url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : 'http://localhost:9002/dashboard',
+  url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9002',
   handleCodeInApp: true,
 };
 
