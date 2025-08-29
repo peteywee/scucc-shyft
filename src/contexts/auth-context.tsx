@@ -8,6 +8,8 @@ import {
   signInWithEmailLink, 
   sendSignInLinkToEmail,
   signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
   type User 
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -18,13 +20,14 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   sendSignInLink: (email: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const actionCodeSettings = {
-  url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9002',
+  url: typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:9002',
   handleCodeInApp: true,
 };
 
@@ -40,8 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists()) {
+        if (!userDoc.exists() || !userDoc.data()?.onboardedAt) {
            router.push('/onboarding');
+           setUser(user); // Set user so onboarding page has access
         } else {
             setUser(user);
             if(pathname === '/onboarding' || pathname === '/') {
@@ -58,36 +62,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, pathname]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || loading) return;
 
     const handleSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         if (!email) {
-          // If the email is not in localStorage, prompt the user for it.
-          // This can happen if they open the link on a different device.
           email = window.prompt('Please provide your email for confirmation');
-          if (!email) {
-            // User cancelled the prompt
+        }
+        if (!email) {
             console.error("Email is required to complete sign-in.");
             router.push('/');
             return;
-          }
         }
         
         try {
-            const result = await signInWithEmailLink(auth, email, window.location.href);
+            await signInWithEmailLink(auth, email, window.location.href);
             window.localStorage.removeItem('emailForSignIn');
-            const user = result.user;
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-
-            if (!userDoc.exists()) {
-                router.push('/onboarding');
-            } else {
-                setUser(user);
-                router.push('/dashboard');
-            }
         } catch (error) {
             console.error('Error signing in with email link:', error);
             router.push('/');
@@ -95,11 +86,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
     handleSignIn();
-  }, [router]);
+  }, [router, loading]);
 
   const sendSignInLink = async (email: string) => {
     window.localStorage.setItem('emailForSignIn', email);
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+  };
+  
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle the redirect
+    } catch (error) {
+      console.error("Error during Google sign-in:", error);
+    }
   };
 
   const logout = async () => {
@@ -111,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     sendSignInLink,
+    signInWithGoogle,
     logout,
   };
 
