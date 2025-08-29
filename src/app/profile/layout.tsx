@@ -10,7 +10,7 @@ import { SidebarNav } from '@/components/sidebar-nav';
 import { AppHeader } from '@/components/app-header';
 import { useAuth } from '@/contexts/auth-context';
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function ProfileLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
