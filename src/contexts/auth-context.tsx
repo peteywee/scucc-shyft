@@ -58,30 +58,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, pathname]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         if (!email) {
+          // If the email is not in localStorage, prompt the user for it.
+          // This can happen if they open the link on a different device.
           email = window.prompt('Please provide your email for confirmation');
+          if (!email) {
+            // User cancelled the prompt
+            console.error("Email is required to complete sign-in.");
+            router.push('/');
+            return;
+          }
         }
-        if (email) {
-            try {
-                const result = await signInWithEmailLink(auth, email, window.location.href);
-                window.localStorage.removeItem('emailForSignIn');
-                const user = result.user;
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
+        
+        try {
+            const result = await signInWithEmailLink(auth, email, window.location.href);
+            window.localStorage.removeItem('emailForSignIn');
+            const user = result.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
 
-                if (!userDoc.exists()) {
-                    router.push('/onboarding');
-                } else {
-                    setUser(user);
-                    router.push('/dashboard');
-                }
-            } catch (error) {
-                console.error('Error signing in with email link:', error);
-                router.push('/');
+            if (!userDoc.exists()) {
+                router.push('/onboarding');
+            } else {
+                setUser(user);
+                router.push('/dashboard');
             }
+        } catch (error) {
+            console.error('Error signing in with email link:', error);
+            router.push('/');
         }
       }
     };
